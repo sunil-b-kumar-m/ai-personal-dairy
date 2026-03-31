@@ -169,6 +169,8 @@ ai-personal-dairy/
 | **RefreshToken** | id, token, userId, expiresAt | JWT refresh token for session rotation |
 | **Invite** | id, email, token, roleId?, invitedById, status (pending/accepted/expired), expiresAt | User/admin invite with optional role pre-assignment |
 | **AppSetting** | key, value | Key-value store for app-level feature flags |
+| **FamilyMember** | id, userId, name, relationship (self/spouse/parent/child/sibling/other) | Family member profile linked to financial accounts |
+| **BankAccount** | id, userId, familyMemberId, bankName, accountType (savings/current), accountNumberLast4, ifscCode?, balance (BigInt paise), balanceUpdatedAt, isActive | Bank account with balance tracking |
 
 ### Default Roles & Permissions
 
@@ -320,6 +322,26 @@ main.tsx
 |--------|------|------------|-------------|
 | GET | `/` | `admin.settings.read` | Get all app settings |
 | PUT | `/` | `admin.settings.update` | Update app setting |
+
+### Family Members — `/api/family-members/`
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/` | Yes | List family members (auto-creates "Self") |
+| POST | `/` | Yes | Create family member |
+| PUT | `/:id` | Yes | Update family member |
+| DELETE | `/:id` | Yes | Delete (blocked if has linked accounts) |
+
+### Bank Accounts — `/api/bank-accounts/`
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/` | Yes | List accounts (filterable by `?familyMemberId=`) |
+| POST | `/` | Yes | Create bank account |
+| GET | `/:id` | Yes | Get account detail |
+| PUT | `/:id` | Yes | Update account |
+| PUT | `/:id/balance` | Yes | Quick balance update |
+| DELETE | `/:id` | Yes | Soft-delete (set isActive=false) |
 
 ### Health — `/api/health`
 
