@@ -14,6 +14,10 @@ function LoginPage() {
     if (error) {
       toast.error(decodeURIComponent(error));
     }
+    const verified = searchParams.get("verified");
+    if (verified === "true") {
+      toast.success("Email verified successfully! You can now sign in.");
+    }
   }, [searchParams]);
 
   if (isLoading) return null;
