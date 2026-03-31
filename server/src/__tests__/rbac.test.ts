@@ -64,12 +64,12 @@ describe("RBAC API", () => {
     const adminLogin = await request(app)
       .post("/api/auth/login")
       .send({ email: ADMIN_EMAIL, password: "TestPass123!" });
-    adminCookies = adminLogin.headers["set-cookie"];
+    adminCookies = [adminLogin.headers["set-cookie"]].flat();
 
     const userLogin = await request(app)
       .post("/api/auth/login")
       .send({ email: USER_EMAIL, password: "TestPass123!" });
-    userCookies = userLogin.headers["set-cookie"];
+    userCookies = [userLogin.headers["set-cookie"]].flat();
   });
 
   afterAll(async () => {
