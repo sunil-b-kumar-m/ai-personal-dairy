@@ -173,6 +173,7 @@ ai-personal-dairy/
 | **BankAccount** | id, userId, familyMemberId, bankName, accountType (savings/current), accountNumberLast4, ifscCode?, balance (BigInt paise), balanceUpdatedAt, isActive | Bank account with balance tracking |
 | **CreditCard** | id, userId, familyMemberId, bankName, cardName, cardNumberLast4, creditLimit, currentDue, minimumDue (all BigInt paise), dueDate, billingCycleDate, isActive | Credit card with due date tracking |
 | **Loan** | id, userId, familyMemberId, lenderName, loanType (home/car/personal/education/gold/other), principalAmount, outstandingAmount, emiAmount (BigInt paise), interestRate, tenureMonths, startDate, endDate?, emiDueDate, isActive | Loan with EMI tracking |
+| **Reminder** | id, userId, type (credit_card_due/loan_emi/balance_update/custom), title, description?, linkedEntityId?, linkedEntityType?, dueDate?, recurringDay?, frequency (once/monthly/quarterly/yearly), isActive | Auto-generated and custom reminders |
 
 ### Default Roles & Permissions
 
@@ -370,6 +371,16 @@ main.tsx
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/overview` | Yes | Aggregated net worth, stats, upcoming dues, alerts |
+
+### Reminders — `/api/reminders/`
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/` | Yes | List reminders (`?type=`, `?upcoming=true`) |
+| POST | `/` | Yes | Create custom reminder |
+| POST | `/generate` | Yes | Auto-generate reminders from cards/loans |
+| PUT | `/:id` | Yes | Update reminder |
+| DELETE | `/:id` | Yes | Delete (custom only, auto-generated blocked) |
 
 ### Health — `/api/health`
 
