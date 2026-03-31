@@ -10,6 +10,8 @@ import {
   googleCallback,
   microsoftAuth,
   microsoftCallback,
+  verifyEmailHandler,
+  resendVerificationHandler,
 } from "../controllers/auth.js";
 import { env } from "../config/env.js";
 
@@ -20,6 +22,8 @@ authRouter.post("/login", login);
 authRouter.post("/logout", authenticate, logout);
 authRouter.post("/refresh", refresh);
 authRouter.get("/me", authenticate, me);
+authRouter.get("/verify-email", verifyEmailHandler);
+authRouter.post("/resend-verification", authenticate, resendVerificationHandler);
 
 // Google OAuth (only if configured)
 if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) {

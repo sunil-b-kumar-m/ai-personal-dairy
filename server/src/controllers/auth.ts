@@ -16,7 +16,9 @@ import {
 import { env } from "../config/env.js";
 import type { AuthenticatedRequest } from "../middleware/authenticate.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { ConflictError, UnauthorizedError, NotFoundError } from "../utils/errors.js";
+import { ConflictError, UnauthorizedError, NotFoundError, ValidationError } from "../utils/errors.js";
+import { generateVerificationToken, verifyEmail as verifyEmailService, resendVerification } from "../services/verification.js";
+import { sendWelcomeEmail, sendVerificationEmail } from "../services/email.js";
 
 const registerSchema = z.object({
   name: z.string().min(1).max(100),
@@ -50,6 +52,11 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
   });
 
   await assignDefaultRole(user.id);
+
+  // Generate verification token and send emails (fire-and-forget for sends)
+  const verificationToken = await generateVerificationToken(user.id);
+  void sendVerificationEmail({ name: user.name, email: user.email }, verificationToken);
+  void sendWelcomeEmail({ name: user.name, email: user.email });
 
   const accessToken = generateAccessToken(user.id, user.email);
   const refreshToken = await generateRefreshToken(user.id);
@@ -203,3 +210,27 @@ export function microsoftCallback(req: Request, res: Response, next: NextFunctio
     },
   )(req, res, next);
 }
+
+export const verifyEmailHandler = asyncHandler(async (req, res) => {
+  const token = req.query.token as string;
+  if (!token) {
+    throw new ValidationError("Verification token is required");
+  }
+
+  await verifyEmailService(token);
+  res.redirect(`${env.CLIENT_URL}/login?verified=true`);
+});
+
+export const resendVerificationHandler = asyncHandler(async (req, res) => {
+  const userId = (req as AuthenticatedRequest).userId;
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+
+  if (!user) {
+    throw new NotFoundError("User not found");
+  }
+
+  const token = await resendVerification(userId);
+  void sendVerificationEmail({ name: user.name, email: user.email }, token);
+
+  res.json({ success: true, message: "Verification email sent" });
+});
