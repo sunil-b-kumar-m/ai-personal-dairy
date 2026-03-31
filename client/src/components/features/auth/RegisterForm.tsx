@@ -1,11 +1,18 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import toast from "react-hot-toast";
+import { api } from "@/services/api";
+import type { ApiResponse, AuthResponse } from "@diary/shared";
 
-function RegisterForm() {
-  const { register } = useAuth();
+interface RegisterFormProps {
+  inviteToken?: string;
+  inviteEmail?: string;
+}
+
+function RegisterForm({ inviteToken, inviteEmail }: RegisterFormProps) {
+  const { register, refreshAuth } = useAuth();
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(inviteEmail || "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,7 +32,17 @@ function RegisterForm() {
 
     setIsSubmitting(true);
     try {
-      await register(name, email, password);
+      if (inviteToken) {
+        await api.post<ApiResponse<AuthResponse>>("/auth/register", {
+          name,
+          email,
+          password,
+          inviteToken,
+        });
+        await refreshAuth();
+      } else {
+        await register(name, email, password);
+      }
       toast.success("Account created successfully");
     } catch (error) {
       toast.error(
@@ -63,7 +80,10 @@ function RegisterForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          readOnly={!!inviteEmail}
+          className={`mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+            inviteEmail ? "bg-gray-50 text-gray-500" : ""
+          }`}
           placeholder="you@example.com"
         />
       </div>
