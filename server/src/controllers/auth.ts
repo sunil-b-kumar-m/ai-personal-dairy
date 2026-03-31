@@ -16,7 +16,7 @@ import {
 import { env } from "../config/env.js";
 import type { AuthenticatedRequest } from "../middleware/authenticate.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { ConflictError, UnauthorizedError, NotFoundError, ValidationError } from "../utils/errors.js";
+import { ConflictError, UnauthorizedError, NotFoundError } from "../utils/errors.js";
 
 const registerSchema = z.object({
   name: z.string().min(1).max(100),

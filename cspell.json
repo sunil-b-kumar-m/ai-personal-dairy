@@ -63,7 +63,11 @@
     "bootcamp",
     "softprops",
     "oneline",
-    "signups"
+    "signups",
+    "unconfigured",
+    "Segoe",
+    "rgba",
+    "cooldown"
   ],
   "ignorePaths": [
     "node_modules",
