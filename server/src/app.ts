@@ -18,6 +18,7 @@ import { bankAccountsRouter } from "./routes/bankAccounts.js";
 import { creditCardsRouter } from "./routes/creditCards.js";
 import { loansRouter } from "./routes/loans.js";
 import { dashboardRouter } from "./routes/dashboard.js";
+import { remindersRouter } from "./routes/reminders.js";
 
 const app: Express = express();
 
@@ -48,6 +49,7 @@ app.use("/api/bank-accounts", bankAccountsRouter);
 app.use("/api/credit-cards", creditCardsRouter);
 app.use("/api/loans", loansRouter);
 app.use("/api/dashboard", dashboardRouter);
+app.use("/api/reminders", remindersRouter);
 
 // Error handling
 app.use(errorHandler);
