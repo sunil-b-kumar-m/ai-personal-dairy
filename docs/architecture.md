@@ -161,7 +161,7 @@ ai-personal-dairy/
 
 | Model | Fields | Description |
 |-------|--------|-------------|
-| **User** | id, email, passwordHash?, name, avatar?, provider (local/google/microsoft), providerId?, isActive | Application user |
+| **User** | id, email, passwordHash?, name, avatar?, provider (local/google/microsoft), providerId?, isActive, emailVerified, verificationToken?, verificationExpiry? | Application user |
 | **Role** | id, name, description?, isDefault | Dynamic role (Admin, User, Financer, Family by default) |
 | **Permission** | id, name (dot notation), description?, module | Fine-grained permission (e.g. `diary.create`) |
 | **UserRole** | userId, roleId | Many-to-many join (users can have multiple roles) |
@@ -271,6 +271,8 @@ main.tsx
 | GET | `/google/callback` | No | Google OAuth callback |
 | GET | `/microsoft` | No | Start Microsoft OAuth |
 | GET | `/microsoft/callback` | No | Microsoft OAuth callback |
+| GET | `/verify-email?token=xxx` | No | Verify email address, redirect to login |
+| POST | `/resend-verification` | Yes | Resend verification email (rate-limited) |
 
 ### User Management — `/api/users/`
 
@@ -370,6 +372,11 @@ Turborepo ensures `@diary/shared` is built before the dependent packages.
 | `MICROSOFT_CLIENT_SECRET` | `` | Microsoft OAuth client secret (optional) |
 | `MICROSOFT_CALLBACK_URL` | `http://localhost:4000/api/auth/microsoft/callback` | Microsoft OAuth redirect URI |
 | `ADMIN_SEED_PASSWORD` | `Admin@123456` | Initial admin password for seed |
+| `SMTP_HOST` | `` | SMTP server hostname (e.g., `smtp.gmail.com`). If empty, emails log to console. |
+| `SMTP_PORT` | `587` | SMTP port |
+| `SMTP_USER` | `` | SMTP username |
+| `SMTP_PASS` | `` | SMTP password |
+| `SMTP_FROM` | `noreply@example.com` | Sender email address |
 
 ### Client (`client/.env`)
 
