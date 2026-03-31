@@ -8,9 +8,9 @@ build/
 .turbo/
 
 # Environment
-.env
-.env.local
-.env.production
+# .env
+# .env.local
+# .env.production
 
 # IDE
 .vscode/
@@ -36,6 +36,3 @@ server/prisma/*.db-journal
 
 # Netlify
 .netlify/
-
-# Claude Code
-.claude/settings.local.json
