@@ -7,6 +7,7 @@ async function request<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
   const response = await fetch(url, {
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
       ...options?.headers,
@@ -16,7 +17,7 @@ async function request<T>(
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || `Request failed: ${response.status}`);
+    throw new Error(error.error || `Request failed: ${response.status}`);
   }
 
   return response.json();
@@ -24,8 +25,11 @@ async function request<T>(
 
 export const api = {
   get: <T>(endpoint: string) => request<T>(endpoint),
-  post: <T>(endpoint: string, data: unknown) =>
-    request<T>(endpoint, { method: "POST", body: JSON.stringify(data) }),
+  post: <T>(endpoint: string, data?: unknown) =>
+    request<T>(endpoint, {
+      method: "POST",
+      body: data ? JSON.stringify(data) : undefined,
+    }),
   put: <T>(endpoint: string, data: unknown) =>
     request<T>(endpoint, { method: "PUT", body: JSON.stringify(data) }),
   delete: <T>(endpoint: string) =>

@@ -5,11 +5,15 @@ Step-by-step guides for common development tasks.
 ## Table of Contents
 
 - [Add a New API Endpoint](#add-a-new-api-endpoint)
+- [Add a Protected API Endpoint](#add-a-protected-api-endpoint)
 - [Add a New Page (Frontend)](#add-a-new-page-frontend)
+- [Add a Protected Page](#add-a-protected-page)
 - [Add a New Reusable Component](#add-a-new-reusable-component)
 - [Add a New Database Model](#add-a-new-database-model)
 - [Add Shared Types](#add-shared-types)
 - [Add a New Environment Variable](#add-a-new-environment-variable)
+- [Add a New Permission](#add-a-new-permission)
+- [Add a New OAuth Provider](#add-a-new-oauth-provider)
 - [Full Feature Example: Diary Entries](#full-feature-example-diary-entries)
 
 ---
@@ -94,6 +98,56 @@ app.use("/api/entries", entriesRouter);
 
 ---
 
+## Add a Protected API Endpoint
+
+Same as above, but with authentication and permission checks.
+
+### 1. Define the route with middleware
+
+```typescript
+import { Router, type Router as RouterType } from "express";
+import { authenticate } from "../middleware/authenticate.js";
+import { authorize } from "../middleware/authorize.js";
+import { getEntries, createEntry } from "../controllers/entries.js";
+
+export const entriesRouter: RouterType = Router();
+
+// All routes require authentication
+entriesRouter.use(authenticate);
+
+// Each route checks a specific permission
+entriesRouter.get("/", authorize("diary.read"), getEntries);
+entriesRouter.post("/", authorize("diary.create"), createEntry);
+```
+
+### 2. Access the authenticated user in controllers
+
+```typescript
+import type { AuthenticatedRequest } from "../middleware/authenticate.js";
+
+export async function getEntries(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const entries = await entriesService.getEntriesByUser(userId);
+    res.json({ success: true, data: entries });
+  } catch (error) {
+    next(error);
+  }
+}
+```
+
+### 3. Register the route
+
+In `server/src/app.ts`:
+
+```typescript
+import { entriesRouter } from "./routes/entries.js";
+
+app.use("/api/entries", entriesRouter);
+```
+
+---
+
 ## Add a New Page (Frontend)
 
 ### 1. Create the page component
@@ -131,6 +185,55 @@ In `client/src/components/layout/Header.tsx`:
 <Link to="/entries" className="text-gray-600 hover:text-gray-900">
   Entries
 </Link>
+```
+
+---
+
+## Add a Protected Page
+
+### 1. Create the page component
+
+Same as a regular page (see above).
+
+### 2. Add the route with ProtectedRoute
+
+In `client/src/App.tsx`:
+
+```tsx
+import { ProtectedRoute } from "./components/features/auth/ProtectedRoute";
+import EntriesPage from "./pages/EntriesPage";
+
+// Auth required, no specific permission:
+<Route
+  path="entries"
+  element={
+    <ProtectedRoute>
+      <EntriesPage />
+    </ProtectedRoute>
+  }
+/>
+
+// Auth required + specific permission:
+<Route
+  path="admin/entries"
+  element={
+    <ProtectedRoute permission="diary.read">
+      <EntriesPage />
+    </ProtectedRoute>
+  }
+/>
+```
+
+### 3. Conditionally show navigation links
+
+In `client/src/components/layout/Header.tsx`, use `hasPermission`:
+
+```tsx
+const { hasPermission } = useAuth();
+
+{hasPermission("diary.read") && (
+  <Link to="/entries">Entries</Link>
+)}
 ```
 
 ---
@@ -269,6 +372,86 @@ VITE_MY_NEW_VAR=value
 
 ---
 
+## Add a New Permission
+
+Permissions can be added either via seed or via the admin UI.
+
+### Option A: Via Admin UI
+
+1. Log in as admin
+2. Go to `/admin/permissions`
+3. Click "Create Permission"
+4. Enter name (e.g. `diary.export`), module (e.g. `diary`), and description
+5. Go to `/admin/roles` and assign the permission to relevant roles
+
+### Option B: Via Seed Script
+
+1. Add to `PERMISSIONS` array in `server/prisma/seed.ts`:
+
+```typescript
+{ name: "diary.export", description: "Export diary entries", module: "diary" },
+```
+
+2. Add to the relevant role in `ROLE_PERMISSIONS`:
+
+```typescript
+User: [
+  "diary.create", "diary.read", ..., "diary.export",
+],
+```
+
+3. Re-run the seed:
+
+```bash
+pnpm --filter @diary/server run db:seed
+```
+
+---
+
+## Add a New OAuth Provider
+
+1. Install the Passport strategy:
+
+```bash
+pnpm --filter @diary/server add passport-<provider>
+```
+
+2. Add env vars to `server/src/config/env.ts`:
+
+```typescript
+NEW_PROVIDER_CLIENT_ID: z.string().default(""),
+NEW_PROVIDER_CLIENT_SECRET: z.string().default(""),
+NEW_PROVIDER_CALLBACK_URL: z.string().default("http://localhost:4000/api/auth/new-provider/callback"),
+```
+
+3. Add the strategy in `server/src/config/passport.ts` (follow the Google/Microsoft pattern)
+
+4. Add routes in `server/src/routes/auth.ts`:
+
+```typescript
+if (env.NEW_PROVIDER_CLIENT_ID && env.NEW_PROVIDER_CLIENT_SECRET) {
+  authRouter.get("/new-provider", newProviderAuth);
+  authRouter.get("/new-provider/callback", newProviderCallback);
+}
+```
+
+5. Add the provider to the `AuthProvider` enum in `server/prisma/schema.prisma`:
+
+```prisma
+enum AuthProvider {
+  local
+  google
+  microsoft
+  new_provider
+}
+```
+
+6. Run `pnpm --filter @diary/server run db:push && pnpm --filter @diary/server run db:generate`
+
+7. Add a button in `client/src/components/features/auth/OAuthButtons.tsx`
+
+---
+
 ## Full Feature Example: Diary Entries
 
 Here's the complete checklist for adding a "diary entries" feature end-to-end:
@@ -277,10 +460,9 @@ Here's the complete checklist for adding a "diary entries" feature end-to-end:
 
 - [ ] Add `Entry` model to `server/prisma/schema.prisma`
 - [ ] Run `pnpm --filter @diary/server run db:migrate`
-- [ ] Create `server/src/models/prisma.ts` (Prisma client singleton)
 - [ ] Create `server/src/services/entries.ts` (business logic)
 - [ ] Create `server/src/controllers/entries.ts` (request handling + Zod validation)
-- [ ] Create `server/src/routes/entries.ts` (route definitions)
+- [ ] Create `server/src/routes/entries.ts` (with `authenticate` + `authorize` middleware)
 - [ ] Register route in `server/src/app.ts`
 
 ### Shared
@@ -288,15 +470,20 @@ Here's the complete checklist for adding a "diary entries" feature end-to-end:
 - [ ] Add `DiaryEntry` type to `shared/src/types/entries.ts`
 - [ ] Export from `shared/src/index.ts`
 
+### Permissions
+
+- [ ] Add `diary.create`, `diary.read`, etc. permissions via seed or admin UI
+- [ ] Assign permissions to relevant roles (Admin, User)
+
 ### Frontend
 
 - [ ] Add API methods to `client/src/services/api.ts` or a new service file
 - [ ] Create page component in `client/src/pages/EntriesPage.tsx`
-- [ ] Add route in `client/src/App.tsx`
-- [ ] Add nav link in `client/src/components/layout/Header.tsx`
+- [ ] Add route in `client/src/App.tsx` wrapped in `<ProtectedRoute permission="diary.read">`
+- [ ] Add nav link in `client/src/components/layout/Header.tsx` (conditional on `hasPermission`)
 - [ ] Create feature components in `client/src/components/features/`
 
 ### Documentation
 
 - [ ] Update this file if the pattern introduces something new
-- [ ] Update `docs/architecture.md` if new packages or major components are added
+- [ ] Update `docs/architecture.md` if new packages, API endpoints, or DB models are added

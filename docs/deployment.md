@@ -66,14 +66,22 @@ The `netlify.toml` at the repo root pre-configures these settings, so Netlify sh
      - `NODE_ENV` = `production`
      - `DATABASE_URL` = (paste the Internal Database URL)
      - `CLIENT_URL` = `https://your-app.netlify.app`
+     - `JWT_SECRET` = (generate a strong random string, min 32 chars)
+     - `ADMIN_SEED_PASSWORD` = (choose a strong password for the initial admin)
+     - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` = (optional, for Google OAuth)
+     - `MICROSOFT_CLIENT_ID` / `MICROSOFT_CLIENT_SECRET` = (optional, for Microsoft OAuth)
+     - `GOOGLE_CALLBACK_URL` = `https://your-server.onrender.com/api/auth/google/callback`
+     - `MICROSOFT_CALLBACK_URL` = `https://your-server.onrender.com/api/auth/microsoft/callback`
 
-### Database Migrations
+### Database Migrations & Seeding
 
-After deploying, run migrations via Render Shell or a deploy hook:
+After deploying, run via Render Shell:
 
 ```bash
-cd server && pnpm run db:push
+cd server && pnpm run db:push && pnpm run db:seed
 ```
+
+This creates the schema and seeds default roles, permissions, and the admin user.
 
 ## Post-Deployment Checklist
 
@@ -82,6 +90,10 @@ cd server && pnpm run db:push
 - [ ] Frontend can reach the backend API (check browser console for CORS errors)
 - [ ] `CLIENT_URL` on Render matches your exact Netlify URL (no trailing slash)
 - [ ] `VITE_API_URL` on Netlify matches your exact Render URL + `/api`
+- [ ] `JWT_SECRET` is set on Render (required — server won't start without it)
+- [ ] Login works with admin credentials (`admin@diary.app`)
+- [ ] OAuth callback URLs match the Render server URL (if OAuth is configured)
+- [ ] Admin panel loads at `/admin/users` after login
 
 ## Free Tier Limitations
 
