@@ -67,7 +67,10 @@
     "unconfigured",
     "Segoe",
     "rgba",
-    "cooldown"
+    "cooldown",
+    "cellspacing",
+    "cellpadding",
+    "nodemailer"
   ],
   "ignorePaths": [
     "node_modules",
