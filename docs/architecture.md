@@ -167,13 +167,15 @@ ai-personal-dairy/
 | **UserRole** | userId, roleId | Many-to-many join (users can have multiple roles) |
 | **RolePermission** | roleId, permissionId | Many-to-many join (roles can have many permissions) |
 | **RefreshToken** | id, token, userId, expiresAt | JWT refresh token for session rotation |
+| **Invite** | id, email, token, roleId?, invitedById, status (pending/accepted/expired), expiresAt | User/admin invite with optional role pre-assignment |
+| **AppSetting** | key, value | Key-value store for app-level feature flags |
 
 ### Default Roles & Permissions
 
 | Role | Permissions |
 |------|------------|
-| **Admin** | All 23 permissions |
-| **User** (default) | diary.create, diary.read, diary.update, diary.delete, diary.read_shared, family.invite |
+| **Admin** | All 26 permissions |
+| **User** (default) | diary.create, diary.read, diary.update, diary.delete, diary.read_shared, family.invite, invite.create |
 | **Financer** | finance.create, finance.read, finance.update, finance.delete |
 | **Family** | diary.read_shared |
 
@@ -303,6 +305,21 @@ main.tsx
 | POST | `/` | `permission.create` | Create permission |
 | PUT | `/:id` | `permission.update` | Update permission |
 | DELETE | `/:id` | `permission.delete` | Delete permission (blocked if assigned) |
+
+### Invites — `/api/invites/`
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/` | Yes | Create invite (non-admins blocked if feature flag off) |
+| GET | `/` | Yes | List invites sent by current user |
+| GET | `/accept?token=xxx` | No | Accept invite, redirect to register |
+
+### Admin Settings — `/api/admin/settings/`
+
+| Method | Path | Permission | Description |
+|--------|------|------------|-------------|
+| GET | `/` | `admin.settings.read` | Get all app settings |
+| PUT | `/` | `admin.settings.update` | Update app setting |
 
 ### Health — `/api/health`
 
