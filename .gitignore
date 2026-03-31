@@ -36,3 +36,6 @@ server/prisma/*.db-journal
 
 # Netlify
 .netlify/
+
+# Claude Code
+.claude/settings.local.json

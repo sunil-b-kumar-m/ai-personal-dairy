@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "Check if any code files (in server/src/, client/src/, shared/src/, server/prisma/) were created or modified in this session. If so, verify that the relevant documentation files (docs/architecture.md, docs/deployment.md, docs/adding-features.md, README.md) were also updated to reflect those changes. Focus on: new API endpoints, new DB models, new env vars, new pages/routes, new auth/permission changes, new patterns. If docs were NOT updated but should have been, output JSON: {\"decision\": \"block\", \"reason\": \"Documentation not updated. The following docs need changes: [list specific files and what needs updating].\"}. If docs are up-to-date or no doc-worthy code changes were made, output nothing.",
+            "timeout": 30,
+            "statusMessage": "Verifying documentation is up-to-date..."
+          }
+        ]
+      }
+    ]
+  }
+}
