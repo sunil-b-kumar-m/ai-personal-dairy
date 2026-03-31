@@ -41,6 +41,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma client
+        run: pnpm --filter @diary/server run db:generate
+
       - name: Lint
         run: pnpm run lint
 
@@ -81,6 +84,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma client
+        run: pnpm --filter @diary/server run db:generate
+
       - name: Build
         run: pnpm run build
 
@@ -114,6 +120,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @diary/server run db:generate
 
       - name: Test
         run: pnpm run test
