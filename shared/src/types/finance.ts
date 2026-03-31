@@ -30,6 +30,68 @@ export interface BankAccountResponse {
   updatedAt: string;
 }
 
+export interface CreditCardResponse {
+  id: string;
+  familyMemberId: string;
+  familyMember?: { name: string; relationship: Relationship };
+  bankName: string;
+  cardName: string;
+  cardNumberLast4: string;
+  creditLimit: string;
+  currentDue: string;
+  minimumDue: string;
+  dueDate: number;
+  billingCycleDate: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LoanResponse {
+  id: string;
+  familyMemberId: string;
+  familyMember?: { name: string; relationship: Relationship };
+  lenderName: string;
+  loanType: LoanType;
+  principalAmount: string;
+  outstandingAmount: string;
+  emiAmount: string;
+  interestRate: number;
+  tenureMonths: number;
+  startDate: string;
+  endDate: string | null;
+  emiDueDate: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DashboardOverview {
+  netWorth: { total: number; assets: number; liabilities: number };
+  quickStats: {
+    bankBalance: number;
+    cardDues: number;
+    nextDueDate: string | null;
+    nextDueDays: number | null;
+    loanEmiTotal: number;
+    familyMemberCount: number;
+  };
+  upcomingDues: Array<{
+    type: "credit_card" | "loan";
+    name: string;
+    amount: number;
+    dueDate: number;
+    daysLeft: number;
+  }>;
+  needsAttention: Array<{
+    type: "stale_balance" | "overdue";
+    title: string;
+    description: string;
+    entityId?: string;
+    entityType?: string;
+  }>;
+}
+
 export const INDIAN_BANKS = [
   "State Bank of India",
   "HDFC Bank",
