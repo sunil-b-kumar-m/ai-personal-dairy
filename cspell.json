@@ -82,7 +82,8 @@
     "Karur",
     "Vysya",
     "Bandhan",
-    "NBFC"
+    "NBFC",
+    "Financials"
   ],
   "ignorePaths": [
     "node_modules",
