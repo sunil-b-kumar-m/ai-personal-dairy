@@ -39,6 +39,7 @@ Skills live in `.claude/skills/<name>/SKILL.md`. They are invoked with `/skill-n
 |-------|---------|-------------|
 | **doc-check** | `/doc-check` | Verifies `architecture.md`, `deployment.md`, `adding-features.md`, and `README.md` are in sync with actual code. Checks for undocumented endpoints, models, env vars, and routes. |
 | **deploy-check** | `/deploy-check` | Pre-deployment readiness check: build, TypeScript, tests, env config, Prisma schema, deploy configs (Netlify/Render), and security review. |
+| **quality-check** | `/quality-check` | Pre-push quality checklist: lint, spell check, type-check, build, and tests across all workspaces. Runs sequentially, stops at first failure. |
 
 **When they trigger automatically:** When completing a feature (doc-check), or when discussing deployment readiness (deploy-check).
 
