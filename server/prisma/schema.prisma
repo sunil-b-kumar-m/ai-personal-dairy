@@ -33,6 +33,15 @@ enum AccountType {
   current
 }
 
+enum LoanType {
+  home
+  car
+  personal
+  education
+  gold
+  other
+}
+
 model User {
   id           String       @id @default(cuid())
   email        String       @unique
@@ -53,6 +62,8 @@ model User {
   invites       Invite[]
   familyMembers FamilyMember[]
   bankAccounts  BankAccount[]
+  creditCards   CreditCard[]
+  loans         Loan[]
 
   @@index([provider, providerId])
 }
@@ -147,6 +158,8 @@ model FamilyMember {
   updatedAt    DateTime     @updatedAt
 
   bankAccounts BankAccount[]
+  creditCards  CreditCard[]
+  loans        Loan[]
 
   @@index([userId])
 }
@@ -166,6 +179,52 @@ model BankAccount {
   isActive           Boolean     @default(true)
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([familyMemberId])
+}
+
+model CreditCard {
+  id               String       @id @default(cuid())
+  userId           String
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  familyMemberId   String
+  familyMember     FamilyMember @relation(fields: [familyMemberId], references: [id])
+  bankName         String
+  cardName         String
+  cardNumberLast4  String
+  creditLimit      BigInt       @default(0)
+  currentDue       BigInt       @default(0)
+  minimumDue       BigInt       @default(0)
+  dueDate          Int
+  billingCycleDate Int
+  isActive         Boolean      @default(true)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([familyMemberId])
+}
+
+model Loan {
+  id                String       @id @default(cuid())
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  familyMemberId    String
+  familyMember      FamilyMember @relation(fields: [familyMemberId], references: [id])
+  lenderName        String
+  loanType          LoanType
+  principalAmount   BigInt       @default(0)
+  outstandingAmount BigInt       @default(0)
+  emiAmount         BigInt       @default(0)
+  interestRate      Float        @default(0)
+  tenureMonths      Int          @default(0)
+  startDate         DateTime
+  endDate           DateTime?
+  emiDueDate        Int
+  isActive          Boolean      @default(true)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 
   @@index([userId])
   @@index([familyMemberId])
