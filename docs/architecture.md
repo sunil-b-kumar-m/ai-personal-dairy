@@ -395,12 +395,12 @@ Turborepo ensures `@diary/shared` is built before the dependent packages.
 |-------------|---------|-------------------|-------------|
 | **QA** | Manual — any commit | Any branch | No |
 | **Staging** | Manual — any commit | Any branch | No |
-| **Production** | Manual — main only | Must be on `main` | Yes — `vYYYYMMDD.N` |
+| **Production** | Manual — main or hotfix | Must be on `main` or `hotfix/*` | Yes — `vYYYYMMDD.N` (or `vYYYYMMDD.N-hotfix`) |
 
 ### Release Tags
 
-Production deployments from `main` automatically create:
-- Git tag: `vYYYYMMDD.N` (e.g., `v20260331.1`)
+Production deployments from `main` or `hotfix/*` branches automatically create:
+- Git tag: `vYYYYMMDD.N` (e.g., `v20260331.1`) or `vYYYYMMDD.N-hotfix` for hotfix deploys
 - GitHub Release with auto-generated release notes
 
 ### Quality Gate (all workflows)

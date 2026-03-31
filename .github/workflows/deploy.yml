@@ -26,7 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       is_main: ${{ steps.check.outputs.is_main }}
+      is_hotfix: ${{ steps.check.outputs.is_hotfix }}
       short_sha: ${{ steps.check.outputs.short_sha }}
+      release_eligible: ${{ steps.check.outputs.release_eligible }}
 
     steps:
       - name: Checkout
@@ -47,17 +49,36 @@ jobs:
           SHORT_SHA=$(git rev-parse --short "$COMMIT")
           echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
 
+          IS_MAIN=false
+          IS_HOTFIX=false
+
           # Check if commit is on main branch
           if git merge-base --is-ancestor "$COMMIT" origin/main 2>/dev/null; then
-            echo "is_main=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "is_main=false" >> "$GITHUB_OUTPUT"
+            IS_MAIN=true
           fi
 
-      - name: Block non-main commits from production
-        if: github.event.inputs.environment == 'production' && steps.check.outputs.is_main != 'true'
+          # Check if commit is on a hotfix/* branch
+          for branch in $(git branch -r --contains "$COMMIT" 2>/dev/null); do
+            if echo "$branch" | grep -q "hotfix/"; then
+              IS_HOTFIX=true
+              break
+            fi
+          done
+
+          echo "is_main=$IS_MAIN" >> "$GITHUB_OUTPUT"
+          echo "is_hotfix=$IS_HOTFIX" >> "$GITHUB_OUTPUT"
+
+          # Release tag eligible if from main or hotfix
+          if [ "$IS_MAIN" = "true" ] || [ "$IS_HOTFIX" = "true" ]; then
+            echo "release_eligible=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "release_eligible=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Block ineligible commits from production
+        if: github.event.inputs.environment == 'production' && steps.check.outputs.release_eligible != 'true'
         run: |
-          echo "::error::Production deployments require a commit from the main branch"
+          echo "::error::Production deployments require a commit from main or a hotfix/* branch"
           exit 1
 
   quality:
@@ -132,6 +153,7 @@ jobs:
           echo "| **Commit** | \`${{ github.event.inputs.commit_id }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Short SHA** | \`${{ needs.validate.outputs.short_sha }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **From main** | ${{ needs.validate.outputs.is_main }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Hotfix** | ${{ needs.validate.outputs.is_hotfix }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **Triggered by** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
 
       # ---------------------------------------------------------------
@@ -154,7 +176,7 @@ jobs:
     name: Create Release Tag
     runs-on: ubuntu-latest
     needs: [validate, deploy]
-    if: github.event.inputs.environment == 'production' && needs.validate.outputs.is_main == 'true'
+    if: github.event.inputs.environment == 'production' && needs.validate.outputs.release_eligible == 'true'
 
     permissions:
       contents: write
@@ -171,17 +193,25 @@ jobs:
           # Get current date for tag
           DATE=$(date +%Y%m%d)
           SHORT_SHA="${{ needs.validate.outputs.short_sha }}"
+          IS_HOTFIX="${{ needs.validate.outputs.is_hotfix }}"
+
+          # Hotfix tags use -hotfix suffix: v20260331.1-hotfix
+          if [ "$IS_HOTFIX" = "true" ]; then
+            SUFFIX="-hotfix"
+          else
+            SUFFIX=""
+          fi
 
           # Find the next sequence number for today
           EXISTING=$(git tag -l "v${DATE}.*" | sort -V | tail -1)
           if [ -z "$EXISTING" ]; then
             SEQ=1
           else
-            LAST_SEQ=$(echo "$EXISTING" | sed "s/v${DATE}\.//")
+            LAST_SEQ=$(echo "$EXISTING" | sed -E "s/v${DATE}\.([0-9]+).*/\1/")
             SEQ=$((LAST_SEQ + 1))
           fi
 
-          TAG="v${DATE}.${SEQ}"
+          TAG="v${DATE}.${SEQ}${SUFFIX}"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "Generated release tag: $TAG"
 
