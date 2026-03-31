@@ -15,13 +15,15 @@
     "build:server": "turbo run build --filter=@diary/server",
     "test": "turbo run test",
     "test:server": "turbo run test --filter=@diary/server",
-    "test:client": "turbo run test --filter=@diary/client"
+    "test:client": "turbo run test --filter=@diary/client",
+    "spell-check": "cspell \"**/*.{ts,tsx,md,json}\" --no-progress"
   },
   "packageManager": "pnpm@9.15.4",
   "engines": {
     "node": ">=20.0.0"
   },
   "devDependencies": {
+    "cspell": "^9.7.0",
     "turbo": "^2.9.1"
   }
 }
