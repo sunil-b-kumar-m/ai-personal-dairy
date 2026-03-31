@@ -24,6 +24,10 @@ function Header() {
                 Dashboard
               </Link>
 
+              <Link to="/invites" className="text-sm text-gray-600 hover:text-gray-900">
+                Invites
+              </Link>
+
               {hasPermission("user.read") && (
                 <div className="relative group">
                   <button className="text-sm text-gray-600 hover:text-gray-900">
@@ -50,6 +54,14 @@ function Header() {
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
                         Permissions
+                      </Link>
+                    )}
+                    {hasPermission("admin.settings.read") && (
+                      <Link
+                        to="/admin/settings"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Settings
                       </Link>
                     )}
                   </div>

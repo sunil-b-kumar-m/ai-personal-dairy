@@ -9,6 +9,8 @@ import DashboardPage from "./pages/DashboardPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import AdminRolesPage from "./pages/admin/AdminRolesPage";
 import AdminPermissionsPage from "./pages/admin/AdminPermissionsPage";
+import InvitePage from "./pages/InvitePage";
+import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 import { ProtectedRoute } from "./components/features/auth/ProtectedRoute";
 
 function App() {
@@ -53,6 +55,23 @@ function App() {
           element={
             <ProtectedRoute permission="permission.read">
               <AdminPermissionsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="invites"
+          element={
+            <ProtectedRoute>
+              <InvitePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="admin/settings"
+          element={
+            <ProtectedRoute permission="admin.settings.read">
+              <AdminSettingsPage />
             </ProtectedRoute>
           }
         />
