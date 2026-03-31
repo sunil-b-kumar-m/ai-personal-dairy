@@ -1,0 +1,24 @@
+{
+  "name": "ai-personal-diary",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-powered personal diary - fullstack monorepo",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "clean": "turbo run clean",
+    "dev:client": "turbo run dev --filter=@diary/client",
+    "dev:server": "turbo run dev --filter=@diary/server",
+    "build:client": "turbo run build --filter=@diary/client",
+    "build:server": "turbo run build --filter=@diary/server"
+  },
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "turbo": "^2.9.1"
+  }
+}
